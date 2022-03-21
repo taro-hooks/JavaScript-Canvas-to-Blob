@@ -140,4 +140,4 @@
   } else {
     window.dataURLtoBlob = dataURLtoBlob
   }
-})(window)
+})(globalThis || window) // shims globalThis to miniprogram
