@@ -19,6 +19,7 @@
 
   var CanvasPrototype =
     window.HTMLCanvasElement && window.HTMLCanvasElement.prototype
+  var hasCanvasPrototype = !!CanvasPrototype
   var hasBlobConstructor =
     window.Blob &&
     (function () {
@@ -93,40 +94,42 @@
       bb.append(arrayBuffer)
       return bb.getBlob(mediaType)
     }
-  if (window.HTMLCanvasElement && !CanvasPrototype.toBlob) {
-    if (CanvasPrototype.mozGetAsFile) {
-      CanvasPrototype.toBlob = function (callback, type, quality) {
-        var self = this
-        setTimeout(function () {
-          if (quality && CanvasPrototype.toDataURL && dataURLtoBlob) {
-            callback(dataURLtoBlob(self.toDataURL(type, quality)))
-          } else {
-            callback(self.mozGetAsFile('blob', type))
-          }
-        })
-      }
-    } else if (CanvasPrototype.toDataURL && dataURLtoBlob) {
-      if (CanvasPrototype.msToBlob) {
+  if (hasCanvasPrototype) {
+    if (window.HTMLCanvasElement && !CanvasPrototype.toBlob) {
+      if (CanvasPrototype.mozGetAsFile) {
         CanvasPrototype.toBlob = function (callback, type, quality) {
           var self = this
           setTimeout(function () {
-            if (
-              ((type && type !== 'image/png') || quality) &&
-              CanvasPrototype.toDataURL &&
-              dataURLtoBlob
-            ) {
+            if (quality && CanvasPrototype.toDataURL && dataURLtoBlob) {
               callback(dataURLtoBlob(self.toDataURL(type, quality)))
             } else {
-              callback(self.msToBlob(type))
+              callback(self.mozGetAsFile('blob', type))
             }
           })
         }
-      } else {
-        CanvasPrototype.toBlob = function (callback, type, quality) {
-          var self = this
-          setTimeout(function () {
-            callback(dataURLtoBlob(self.toDataURL(type, quality)))
-          })
+      } else if (CanvasPrototype.toDataURL && dataURLtoBlob) {
+        if (CanvasPrototype.msToBlob) {
+          CanvasPrototype.toBlob = function (callback, type, quality) {
+            var self = this
+            setTimeout(function () {
+              if (
+                ((type && type !== 'image/png') || quality) &&
+                CanvasPrototype.toDataURL &&
+                dataURLtoBlob
+              ) {
+                callback(dataURLtoBlob(self.toDataURL(type, quality)))
+              } else {
+                callback(self.msToBlob(type))
+              }
+            })
+          }
+        } else {
+          CanvasPrototype.toBlob = function (callback, type, quality) {
+            var self = this
+            setTimeout(function () {
+              callback(dataURLtoBlob(self.toDataURL(type, quality)))
+            })
+          }
         }
       }
     }
